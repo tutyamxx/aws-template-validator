@@ -5,7 +5,7 @@ const { CloudFormationClient, ValidateTemplateCommand } = require('@aws-sdk/clie
 
 /**
  * aws-template-validator - ☁️ AWS CloudFormation Template Validator — Validate JSON/YAML templates directly with AWS
- * @version: v1.0.5
+ * @version: v1.0.6
  * @link: https://github.com/tutyamxx/aws-template-validator
  * @license: MIT
  **/
