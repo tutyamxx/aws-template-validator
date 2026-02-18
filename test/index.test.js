@@ -147,10 +147,7 @@ describe('CloudFormation Validator Tests', () => {
         jest.spyOn(fs, 'readFileSync').mockReturnValue(validYaml);
 
         // --| Fail us-east-1 once, succeed on us-west-2
-        cfMock
-            .on(ValidateTemplateCommand)
-            .rejectsOnce(new Error('Network Error'))
-            .resolves({});
+        cfMock.on(ValidateTemplateCommand).rejectsOnce(new Error('Network Error')).resolves({});
 
         await validateWithAWS('valid.yaml');
 
