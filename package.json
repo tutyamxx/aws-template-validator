@@ -1,6 +1,6 @@
 {
   "name": "aws-template-validator",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "☁️ AWS CloudFormation Template Validator — Validate JSON/YAML templates directly with AWS",
   "main": "index.js",
   "module": "index.js",

@@ -3,37 +3,53 @@
 const fs = require('fs');
 const { CloudFormationClient, ValidateTemplateCommand } = require('@aws-sdk/client-cloudformation');
 
-const client = new CloudFormationClient({ region: 'us-east-1' });
-
 /**
- *  aws-template-validator - ☁️ AWS CloudFormation Template Validator — Validate JSON/YAML templates directly with AWS
- *  @version: v1.0.2
- *  @link: https://github.com/tutyamxx/aws-template-validator
- *  @license: MIT
+ * aws-template-validator - ☁️ AWS CloudFormation Template Validator — Validate JSON/YAML templates directly with AWS
+ * @version: v1.0.3
+ * @link: https://github.com/tutyamxx/aws-template-validator
+ * @license: MIT
  **/
 
 
 /**
  * Validate a CloudFormation template file with `AWS CloudFormation API (SDK v3)`.
  *
- * Reads the file and sends it to AWS for validation.
- * Logs success or failure to the console. Errors are caught and logged.
+ * Reads the file and attempts to validate it against a list of AWS regions.
+ * If a region is unreachable, it fails over to the next configured region.
+ * Syntax errors stop the process immediately. All results are logged to the console.
  *
  * @param {string} templateFile - Path to the CloudFormation template file (`JSON` or `YAML`).
- * @returns {Promise<void>} Resolves after logging validation result.
+ * @returns {Promise<void>} Resolves if validation passes, or exits the process on failure.
  */
 const validateWithAWS = async (templateFile) => {
-    try {
-        const templateBody = fs.readFileSync(templateFile, 'utf-8');
-        const command = new ValidateTemplateCommand({ TemplateBody: templateBody });
-        await client.send(command);
+    const AwsRegions = ['us-east-1', 'us-west-2', 'eu-central-1'];
+    const templateBody = fs.readFileSync(templateFile, 'utf-8');
 
-        console.log('☁️ AWS CloudFormation validation successful!');
-    } catch (err) {
-        console.log('☁️ AWS CloudFormation validation failed!');
-        console.log(err?.message ?? err);
+    for (const region of AwsRegions) {
+        try {
+            const client = new CloudFormationClient({ region });
+            const command = new ValidateTemplateCommand({ TemplateBody: templateBody });
+            await client.send(command);
+
+            console.log(`☁️ AWS Validation successful (via ${region})`);
+
+            return;
+        } catch (err) {
+            // --| If it's a validation error (400), don't retry in another region. A bad template is bad everywhere.
+            if (err.name === 'ValidationError' || err.$metadata?.httpStatusCode === 400) {
+                console.error('☁️ AWS Validation Template Syntax Error:');
+                console.error(err.message);
+
+                process.exit(1);
+            }
+
+            console.warn(`☁️ AWS region ${region} failed or unreachable. Trying next...`);
+        }
     }
-}
+
+    console.error('☁️ AWS CloudFormation validation failed: All configured AWS regions failed to respond.');
+    process.exit(1);
+};
 
 // --| CLI logic: run only if executed directly
 if (require.main === module) {
@@ -45,7 +61,7 @@ if (require.main === module) {
     }
 
     validateWithAWS(templateFile).catch(err => {
-        console.error('❌ Template validation failed:', err);
+        console.error('☁️ An unexpected error occurred:', err?.message ?? err);
         process.exit(1);
     })
 }

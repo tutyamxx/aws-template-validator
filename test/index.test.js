@@ -74,6 +74,13 @@ describe('CloudFormation Validator Tests', () => {
     beforeEach(() => {
         cfMock.reset();
         jest.spyOn(console, 'log').mockImplementation(() => {});
+        jest.spyOn(console, 'error').mockImplementation(() => {});
+        jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+        // --| Mock process.exit to throw an error to halt the async loop during tests
+        jest.spyOn(process, 'exit').mockImplementation((code) => {
+            throw new Error(`Process.exit called with ${code}`);
+        });
     });
 
     afterEach(() => jest.restoreAllMocks());
@@ -85,19 +92,27 @@ describe('CloudFormation Validator Tests', () => {
         await validateWithAWS('valid.yaml');
 
         expect(cfMock.calls()).toHaveLength(1);
-        expect(console.log).toHaveBeenCalledWith(expect.stringContaining('AWS CloudFormation validation successful!'));
+        expect(console.log).toHaveBeenCalledWith(expect.stringContaining('AWS Validation successful (via us-east-1)'));
     });
 
-    it('Should fail when provided a malformed YAML template', async () => {
+    it('Should fail immediately and exit on a 400 Validation Error', async () => {
         jest.spyOn(fs, 'readFileSync').mockReturnValue(invalidYaml);
 
         const awsError = new Error('Template format error: YAML not well-formed');
+        awsError.name = 'ValidationError';
+
         cfMock.on(ValidateTemplateCommand).rejects(awsError);
 
-        await validateWithAWS('invalid.yaml');
+        // --| Wrap in try/catch because our mocked process.exit now throws to stop the loop
+        try {
+            await validateWithAWS('invalid.yaml');
+        } catch (e) {
+            // --| Expected halt
+        }
 
-        expect(console.log).toHaveBeenCalledWith(expect.stringContaining('AWS CloudFormation validation failed!'));
-        expect(console.log).toHaveBeenCalledWith(awsError.message);
+        expect(cfMock.calls()).toHaveLength(1);
+        expect(console.error).toHaveBeenCalledWith(expect.stringContaining('AWS Validation Template Syntax Error:'));
+        expect(process.exit).toHaveBeenCalledWith(1);
     });
 
     it('Should succeed when provided a valid JSON template', async () => {
@@ -107,17 +122,59 @@ describe('CloudFormation Validator Tests', () => {
         await validateWithAWS('valid.json');
 
         expect(cfMock.calls()).toHaveLength(1);
-        expect(console.log).toHaveBeenCalledWith(expect.stringContaining('AWS CloudFormation validation successful!'));
+        expect(console.log).toHaveBeenCalledWith(expect.stringContaining('AWS Validation successful (via us-east-1)'));
     });
 
-    it('Should fail when provided a malformed JSON template', async () => {
+    it('Should fail immediately and exit on a malformed JSON template', async () => {
         jest.spyOn(fs, 'readFileSync').mockReturnValue(invalidJson);
         const awsError = new Error('Template format error: JSON not well-formed');
+        awsError.$metadata = { httpStatusCode: 400 };
 
         cfMock.on(ValidateTemplateCommand).rejects(awsError);
-        await validateWithAWS('invalid.json');
 
-        expect(console.log).toHaveBeenCalledWith(expect.stringContaining('AWS CloudFormation validation failed!'));
-        expect(console.log).toHaveBeenCalledWith(awsError.message);
+        try {
+            await validateWithAWS('invalid.json');
+        } catch (e) {
+            // --| Expected halt
+        }
+
+        expect(cfMock.calls()).toHaveLength(1);
+        expect(console.error).toHaveBeenCalledWith(expect.stringContaining('AWS Validation Template Syntax Error:'));
+        expect(process.exit).toHaveBeenCalledWith(1);
+    });
+
+    it('Should fail-over to the next region on network/timeout errors', async () => {
+        jest.spyOn(fs, 'readFileSync').mockReturnValue(validYaml);
+
+        // --| Fail us-east-1 once, succeed on us-west-2
+        cfMock
+            .on(ValidateTemplateCommand)
+            .rejectsOnce(new Error('Network Error'))
+            .resolves({});
+
+        await validateWithAWS('valid.yaml');
+
+        expect(cfMock.calls()).toHaveLength(2);
+        expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('AWS region us-east-1 failed or unreachable'));
+        expect(console.log).toHaveBeenCalledWith(expect.stringContaining('AWS Validation successful (via us-west-2)'));
+    });
+
+    it('Should log error and exit if all regions fail', async () => {
+        jest.spyOn(fs, 'readFileSync').mockReturnValue(validYaml);
+
+        // --| All regions return a non-400 error
+        cfMock.on(ValidateTemplateCommand).rejects(new Error('Service Unavailable'));
+
+        try {
+            await validateWithAWS('valid.yaml');
+        } catch (e) {
+            // --| Expected halt after 3 retries
+        }
+
+        expect(cfMock.calls()).toHaveLength(3);
+        expect(console.error).toHaveBeenCalledWith(
+            expect.stringContaining('AWS CloudFormation validation failed: All configured AWS regions failed to respond.')
+        );
+        expect(process.exit).toHaveBeenCalledWith(1);
     });
 });
