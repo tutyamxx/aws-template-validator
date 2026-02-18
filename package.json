@@ -1,0 +1,43 @@
+{
+  "name": "aws-template-validator",
+  "version": "1.0.0",
+  "description": "☁️ AWS CloudFormation Template Validator — Validate JSON/YAML templates directly with AWS",
+  "main": "index.js",
+  "module": "index.js",
+  "types": "index.d.ts",
+  "exports": {
+    "require": "./index.js",
+    "import": "./index.js",
+    "types": "./index.d.ts"
+  },
+  "bin": {
+    "aws-template-validator": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "jest --verbose"
+  },
+  "keywords": [
+    "aws",
+    "cloudformation",
+    "cfn",
+    "template",
+    "validator",
+    "cli",
+    "yaml",
+    "json",
+    "infrastructure-as-code",
+    "iac",
+    "aws-cli",
+    "aws-tooling"
+  ],
+  "author": "tuty",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-cloudformation": "^3.992.0"
+  },
+  "devDependencies": {
+    "aws-sdk-client-mock": "^4.1.0",
+    "jest": "^30.2.0"
+  }
+}
