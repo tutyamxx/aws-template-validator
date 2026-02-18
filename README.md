@@ -9,7 +9,7 @@
 * 👨‍💻 Can be used as `CLI` via `npx`/`global link` or as `module`
 * ♻️ Works seamlessly with `CommonJS`, `ESM` and `TypeScript`
 
-# 📦 Install via [NPM](https://www.npmjs.com/package/contains-emoji)
+# 📦 Install via [NPM](https://www.npmjs.com/package/aws-template-validator)
 
 ```bash
 $ npm i aws-template-validator
@@ -26,7 +26,7 @@ npx aws-template-validator ./my-template.yaml
 ```javascript
 const { validateWithAWS } = require('aws-template-validator');
 
-const templateFile = './path/to/awsfile.yaml';
+const templateFile = './path/to/my-template.yaml';
 
 const runValidation = async () => {
     try {
@@ -43,7 +43,7 @@ runValidation();
 ```javascript
 import { validateWithAWS } from 'aws-template-validator';
 
-const templateFile = './path/to/awsfile.yaml';
+const templateFile = './path/to/my-template.yaml';
 
 const runValidation = async () => {
     try {
@@ -60,7 +60,7 @@ runValidation()
 ```javascript
 import { validateWithAWS } from 'aws-template-validator';
 
-const templateFile: string = './path/to/awsfile.yaml';
+const templateFile: string = './path/to/my-template.yaml';
 
 const runValidation = async () => {
     try {
