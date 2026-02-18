@@ -2,10 +2,11 @@
 
 const fs = require('fs');
 const { CloudFormationClient, ValidateTemplateCommand } = require('@aws-sdk/client-cloudformation');
+const packageName = require('./package.json').name;
 
 /**
  * aws-template-validator - ☁️ AWS CloudFormation Template Validator — Validate JSON/YAML templates directly with AWS
- * @version: v1.0.6
+ * @version: v1.0.7
  * @link: https://github.com/tutyamxx/aws-template-validator
  * @license: MIT
  **/
@@ -56,7 +57,7 @@ if (require.main === module) {
     const [,, templateFile] = process.argv;
 
     if (!templateFile) {
-        console.error('Usage: node index.js <template-file>');
+        console.error(`Usage: npx ${packageName} <template-file>.yaml`);
         process.exit(1);
     }
 
