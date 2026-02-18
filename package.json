@@ -1,6 +1,6 @@
 {
   "name": "aws-template-validator",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "☁️ AWS CloudFormation Template Validator — Validate JSON/YAML templates directly with AWS",
   "main": "index.js",
   "module": "index.js",
@@ -11,7 +11,18 @@
     "types": "./index.d.ts"
   },
   "bin": {
-    "aws-template-validator": "./index.js"
+    "aws-template-validator": "index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tutyamxx/aws-template-validator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tutyamxx/aws-template-validator/issues"
+  },
+  "homepage": "https://github.com/tutyamxx/aws-template-validator#readme",
+  "publishConfig": {
+    "provenance": true
   },
   "scripts": {
     "start": "node index.js",

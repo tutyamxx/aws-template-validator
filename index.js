@@ -7,7 +7,7 @@ const client = new CloudFormationClient({ region: 'us-east-1' });
 
 /**
  *  aws-template-validator - ☁️ AWS CloudFormation Template Validator — Validate JSON/YAML templates directly with AWS
- *  @version: v1.0.1
+ *  @version: v1.0.2
  *  @link: https://github.com/tutyamxx/aws-template-validator
  *  @license: MIT
  **/
