@@ -6,7 +6,7 @@ const packageName = require('./package.json').name;
 
 /**
  * aws-template-validator - ☁️ AWS CloudFormation Template Validator — Validate JSON/YAML templates directly with AWS
- * @version: v1.0.8
+ * @version: v1.0.9
  * @link: https://github.com/tutyamxx/aws-template-validator
  * @license: MIT
  **/
