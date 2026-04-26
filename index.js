@@ -6,7 +6,7 @@ const packageName = require('./package.json').name;
 
 /**
  * aws-template-validator - ☁️ AWS CloudFormation Template Validator — Validate JSON/YAML templates directly with AWS
- * @version: v1.1.0
+ * @version: v1.1.1
  * @link: https://github.com/tutyamxx/aws-template-validator
  * @license: MIT
  **/
@@ -23,7 +23,12 @@ const packageName = require('./package.json').name;
  * @returns {Promise<void>} Resolves if validation passes, or exits the process on failure.
  */
 const validateWithAWS = async (templateFile) => {
-    const AwsRegions = ['us-east-1', 'us-west-2', 'eu-central-1'];
+    const AwsRegions = [
+        'us-east-1',      // --| N. Virginia (The "Main" hub)
+        'us-west-2',      // --| Oregon (West Coast fallback)
+        'eu-west-1',      // --| Ireland (Major European hub)
+        'ap-southeast-1'  // --| Singapore (Major Asia hub)
+    ];
     const templateBody = fs.readFileSync(templateFile, 'utf-8');
 
     for (const region of AwsRegions) {

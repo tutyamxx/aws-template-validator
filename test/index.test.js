@@ -168,7 +168,7 @@ describe('CloudFormation Validator Tests', () => {
             // --| Expected halt after 3 retries
         }
 
-        expect(cloudFormationMock.calls()).toHaveLength(3);
+        expect(cloudFormationMock.calls()).toHaveLength(4);
         expect(console.error).toHaveBeenCalledWith(expect.stringContaining('AWS CloudFormation validation failed: All configured AWS regions failed to respond.'));
         expect(process.exit).toHaveBeenCalledWith(1);
     });
